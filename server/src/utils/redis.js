@@ -13,7 +13,15 @@ async function getRedisClient() {
   if (client && isConnected) return client;
 
   try {
-    client = createClient({ url: config.redis.url });
+    const isTls = config.redis.url.startsWith('rediss://');
+    client = createClient({ 
+      url: config.redis.url,
+      socket: {
+        tls: isTls,
+        rejectUnauthorized: false // Required for some serverless Redis providers like Upstash
+      },
+      pingInterval: 10000 // Keep the connection alive
+    });
 
     client.on('error', (err) => {
       console.error('[Redis] Connection error:', err.message);
