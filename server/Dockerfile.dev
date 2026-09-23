@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies first for layer caching
+COPY package*.json ./
+RUN npm install
+
+# We don't copy the src code because we will mount it as a volume in docker-compose for hot-reloading
+# But we copy it just in case this image is run standalone without volumes
+COPY . .
+
+# Expose port
+EXPOSE 5000
+
+# Run in dev mode
+CMD ["npm", "run", "dev"]
