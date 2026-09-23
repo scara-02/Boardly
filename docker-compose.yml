@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # ── Backend Server ──────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/multitenant_saas?replicaSet=rs0
+      - REDIS_URL=redis://redis:6379
+      - JWT_ACCESS_SECRET=your_super_secret_access_key
+      - JWT_REFRESH_SECRET=your_super_secret_refresh_key
+      - CORS_ORIGIN=http://localhost:5173
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # ── Frontend Client ──────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    # Tell Vite where the backend is (if using vite proxy or env vars later)
+    # environment:
+    #   - VITE_API_URL=http://localhost:5000/api
+    depends_on:
+      - server
+
+  # ── MongoDB (Replica Set required for Transactions) ──────────
+  mongodb:
+    image: mongo:6.0
+    # Start mongod with a replica set named 'rs0'
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      # Initialize the replica set if it hasn't been initialized yet
+      test: test $$(echo "rs.initiate({_id:'rs0',members:[{_id:0,host:\"mongodb:27017\"}]}).ok || rs.status().ok" | mongosh --port 27017 --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
+
+  # ── Redis (Rate Limiting) ────────────────────────────────────
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
