@@ -48,7 +48,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (tenantName, email, password, name) => {
-    const res = await apiClient.post('/auth/signup', { tenantName, email, password, name });
+    // Generate a slug from the workspace name
+    const slug = tenantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const res = await apiClient.post('/auth/signup', { companyName: tenantName, slug, email, password, name });
     
     const { user: userData, tenant: tenantData, accessToken, refreshToken } = res.data.data;
     

@@ -23,7 +23,8 @@ const Signup = () => {
       await signup(tenantName, email, password, name);
       navigate('/board');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create workspace. Please try again.');
+      const errorMsg = err.response?.data?.error?.message || err.response?.data?.message || 'Failed to create workspace. Please try again.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
