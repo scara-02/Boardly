@@ -44,6 +44,23 @@ The easiest way to run the entire stack (including the MongoDB Replica Set requi
 
 *Note: The `docker-compose.yml` mounts your local directories as volumes, so any changes you make to the React code in `client/src` or Node code in `server/src` will instantly hot-reload in the container!*
 
+## 🌍 Free Deployment Guide (For Students / Portfolios)
+
+This project is configured to be easily deployed for $0/month using modern serverless providers.
+
+1. **Database & Cache (Free):**
+   - Create a free **M0 Cluster** on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+   - Create a free serverless Redis database on [Upstash](https://upstash.com/).
+2. **Backend API (Render.com):**
+   - Create a Web Service on Render pointing to the `server/` directory.
+   - Set Build Command: `npm install` and Start Command: `node src/server.js`.
+   - Add your `MONGODB_URI` and `REDIS_URL` as environment variables.
+3. **Frontend UI (Vercel):**
+   - Import the `client/` folder as a Vite project on Vercel.
+   - Add the environment variable `VITE_API_URL` pointing to your new Render Backend URL (e.g., `https://my-backend.onrender.com/api`).
+4. **Final Link:** 
+   - Add the resulting Vercel URL to your Render environment variables as `CORS_ORIGIN` so your backend accepts traffic from your hosted frontend.
+
 ## 🧪 Testing the API
 
 To run the backend integration tests locally (requires Node.js):
